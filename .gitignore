@@ -4,7 +4,7 @@
 .LSOverride
 
 # Source files
-data/
+earth_surface_temperature/
 
 # Icon must end with two \r
 Icon

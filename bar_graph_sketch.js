@@ -13,7 +13,7 @@ let buckets = []; // Global array to hold all bubble objects
 let minVal, maxVal, maxBucket, minBucket, bucketSpan;
 
 function preload() {
-    table = loadTable("data/earth_surface_temperature/GlobalLandTemperaturesByCountry.csv", 
+    table = loadTable("data/GlobalLandTemperaturesByCountry.csv", 
     "csv", "header");
 }
 

@@ -2,11 +2,12 @@
 const BACKGROUND_COLOR = 220;
 const chunkSize = 2500;
 const DOT_COLOR = [66, 135, 245];
+const DOT_SIZE = 5;
 const scale = 0.1;
 const numYTicks = 10;
 const numXTicks = 10;
 
-const FILTER_DATE = '2013-01-01';
+const FILTER_DATE = '2013-09-01';
 
 const SCREEN_DIMENSIONS = {
     width:600,
@@ -15,8 +16,8 @@ const SCREEN_DIMENSIONS = {
     rightMargin: 75,
     upperMargin: 50,
     lowerMargin: 50,
-    yTitleOffset: 25,
-    xTitleOffset: 25,
+    yTitleOffset: 20,
+    xTitleOffset: 40,
     yTickSize: 10,
     xTickSize: 10
 };
@@ -71,8 +72,8 @@ function preprocess() {
     }
 
     data = extractedData.map(val => { return { 
-        x: map(val.x, minX, maxX, SCREEN_DIMENSIONS.leftMargin, SCREEN_DIMENSIONS.width), 
-        y: map(val.y, minY, maxY, SCREEN_DIMENSIONS.height, SCREEN_DIMENSIONS.upperMargin) }; 
+        x: map(val.x, minX, maxX, SCREEN_DIMENSIONS.leftMargin, SCREEN_DIMENSIONS.width - SCREEN_DIMENSIONS.rightMargin + SCREEN_DIMENSIONS.leftMargin), 
+        y: map(val.y, minY, maxY, SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin, SCREEN_DIMENSIONS.upperMargin) }; 
     });
 }
 
@@ -85,48 +86,53 @@ function setup() {
 
 function draw() {
     background(BACKGROUND_COLOR);
-    fill(color(...DOT_COLOR));
-
+    fill(0);
     
     // Y-Axis
     line(SCREEN_DIMENSIONS.leftMargin, 
-        SCREEN_DIMENSIONS.upperMargin, 
+        SCREEN_DIMENSIONS.upperMargin / 2, 
         SCREEN_DIMENSIONS.leftMargin, 
         SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin);
     push();
-    translate((SCREEN_DIMENSIONS.leftMargin / 2) - SCREEN_DIMENSIONS.yLabelOffset, (SCREEN_DIMENSIONS.height) / 2 + SCREEN_DIMENSIONS.upperMargin);
+    translate((SCREEN_DIMENSIONS.leftMargin / 2) - SCREEN_DIMENSIONS.yTitleOffset, (SCREEN_DIMENSIONS.height) / 2 + SCREEN_DIMENSIONS.upperMargin);
     rotate(radians(270));
-    text("Average Temperature (°C)", 0, 0);
+    text("Average Temperature Uncertainty (°C)", -50, 0);
     pop();
     
     // X-Axis
     line(SCREEN_DIMENSIONS.leftMargin, 
         SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin, 
-        SCREEN_DIMENSIONS.width - SCREEN_DIMENSIONS.rightMargin + SCREEN_DIMENSIONS.leftMargin,
+        SCREEN_DIMENSIONS.width - (SCREEN_DIMENSIONS.rightMargin / 2) + SCREEN_DIMENSIONS.leftMargin,
         SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin);
-    text("Average Temperature Uncertainty (°C)",
-        SCREEN_DIMENSIONS.leftMargin + (SCREEN_DIMENSIONS.width / 2), 
-        SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin + SCREEN_DIMENSIONS.xLabelOffset);
+    text("Average Temperature (°C)",
+        SCREEN_DIMENSIONS.leftMargin + (SCREEN_DIMENSIONS.width / 2) - 100, 
+        SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin + SCREEN_DIMENSIONS.xTitleOffset);
     
-    let xPos, yPos;
+    
+    // Draw data points
+    strokeWeight(DOT_SIZE);
+    stroke(...DOT_COLOR);
     for (var i = 0; i < data.length - 1; i++) {
         point(data[i].x, data[i].y);
     }
+
+    strokeWeight(1);
+    stroke(0);
+    fill(0);
 
     // Y-labels
     let yTickLabelSpacing = (maxY - minY) / numYTicks;
     let yTickPosSpacing = (SCREEN_DIMENSIONS.height / numYTicks);
     textAlign(RIGHT);
     for (var i = 0; i < numYTicks; i++) {
-        fill(0);
-        text((maxY - (yTickLabelSpacing * i)).toPrecision(3), 
+        text((minY + (yTickLabelSpacing * i)).toPrecision(3), 
             SCREEN_DIMENSIONS.leftMargin - (SCREEN_DIMENSIONS.yTickSize * 1.5), 
-            (yTickPosSpacing * i) + SCREEN_DIMENSIONS.upperMargin);
+            (yTickPosSpacing * i) + SCREEN_DIMENSIONS.upperMargin + 15);
 
         line(SCREEN_DIMENSIONS.leftMargin - (SCREEN_DIMENSIONS.yTickSize / 2), 
-            (yTickPosSpacing * i) + SCREEN_DIMENSIONS.upperMargin, 
+            (SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin) - (yTickPosSpacing * i),
             SCREEN_DIMENSIONS.leftMargin + (SCREEN_DIMENSIONS.yTickSize / 2), 
-            (yTickPosSpacing * i) + SCREEN_DIMENSIONS.upperMargin);
+            (SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin) - (yTickPosSpacing * i));
     }
 
     // X-labels
@@ -134,45 +140,15 @@ function draw() {
     let xTickPosSpacing = (SCREEN_DIMENSIONS.width / numXTicks);
     textAlign(LEFT);
     for (var i = 0; i < numXTicks; i++) {
-        fill(0);
         text((minX + (xTickLabelSpacing * i)).toPrecision(3), 
-            (xTickPosSpacing * i) + SCREEN_DIMENSIONS.leftMargin,
-            SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin + (SCREEN_DIMENSIONS.xTickSize * 1.5));
+            (xTickPosSpacing * i) + SCREEN_DIMENSIONS.leftMargin - 15,
+            SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin + (SCREEN_DIMENSIONS.xTickSize * 2));
 
         line((xTickPosSpacing * i) + SCREEN_DIMENSIONS.leftMargin, 
             SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin - (SCREEN_DIMENSIONS.xTickSize / 2), 
             (xTickPosSpacing * i) + SCREEN_DIMENSIONS.leftMargin,
             SCREEN_DIMENSIONS.height - SCREEN_DIMENSIONS.lowerMargin + SCREEN_DIMENSIONS.upperMargin + (SCREEN_DIMENSIONS.xTickSize / 2))
     }
-
-    //     // X-labels
-//     textAlign(LEFT);
-//     let xTickStepSize = Math.ceil((maxBucket / numXTicks) / 10000) * 10000;
-//     let xTickSpacing = Math.ceil((minBucket + maxBucket) / numXTicks) * scale;
-    
-//     for (var i = 0; i < numXTicks + 1; i++) {
-//         line((i * xTickSpacing + 110), ((buckets.length - 1) * 30 + 60) + 5, 
-//         (i * xTickSpacing + 110), ((buckets.length - 1) * 30 + 60) - 5);
-        
-//         text(i * xTickStepSize, (i * xTickSpacing + 90), ((buckets.length - 1) * 30 + 70), 75);
-//     }
-
-
-    //     textAlign(RIGHT);
-//     for (var i = 0; i < buckets.length - 1; i++) {
-//         fill(color(...BAR_COLOR));
-//         // noStroke();
-//         rect(110, i * 30 + 40, (buckets[buckets.length - i] * scale), 20);
-        
-//         // Y-labels
-//         yLabel = `${ceil.toPrecision(3)} - ${(ceil - bucketSpan).toPrecision(3)}`;
-        
-//         fill(0);
-//         text(yLabel, 25, i * 30 + 40, 75);
-//         line(110 - 5, (i * 30 + 50), 110 + 5, (i * 30 + 50));
-        
-//         ceil -= bucketSpan + Number.MIN_VALUE;
-//     }
 }
 
 
